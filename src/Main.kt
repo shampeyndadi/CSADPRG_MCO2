@@ -1,4 +1,5 @@
 import java.io.File
+import java.nio.file.Paths
 
 fun loadCSV(filePath: String): ArrayList<Map<String, String>> {
     val lines = File(filePath).readLines()
@@ -17,17 +18,13 @@ fun loadCSV(filePath: String): ArrayList<Map<String, String>> {
 }
 
 fun countWords(lines: ArrayList<String>): Int {
-    val words = HashSet<String>()
+    var wordCount = 0
     for (line in lines){
         val wordArray = line.split("\\s+".toRegex())
-        for (word in wordArray){
-            if (word.isNotEmpty()){
-                words.add(word.lowercase())
-            }
-        }
+        wordCount += wordArray.size
     }
 
-    return words.size
+    return wordCount
 }
 
 fun countVocabSize(lines: ArrayList<String>): Int{
@@ -148,7 +145,7 @@ fun stopWords(frequencies: Map<String, Int>, stopWords: List<String>): Map<Strin
 
 fun main(){
 
-    val filePath = "C:\\Users\\admin\\Downloads\\ADPRG_MCO2\\src/fake_tweets.csv"
+    val filePath = "/Users/jedidah/Documents/MCO2_ADPRG/src/fake_tweets.csv"
     val stopWordsList = listOf(
         "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at",
         "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can", "can't", "cannot",
