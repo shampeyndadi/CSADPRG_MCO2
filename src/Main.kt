@@ -60,13 +60,14 @@ fun wordFrequency(lines: ArrayList<String>): Map<String, Int>{
         .associate { it.toPair() }
 }
 
-fun characterFrequency(lines: ArrayList<String>): Map<Char, Int> {
-    val frequencies = HashMap<Char, Int>()
+fun characterFrequency(lines: ArrayList<String>): Map<String, Int> {
+    val frequencies = HashMap<String, Int>()
     for (line in lines) {
         val lowerCase = line.lowercase()
         for (char in lowerCase) {
             if (char != ' ') {
-                frequencies[char] = frequencies.getOrDefault(char, 0) + 1
+                val key = char.toString() // Convert Char to String
+                frequencies[key] = frequencies.getOrDefault(key, 0) + 1
             }
         }
     }
@@ -74,23 +75,6 @@ fun characterFrequency(lines: ArrayList<String>): Map<Char, Int> {
     return frequencies.entries
         .sortedByDescending { it.value }
         .associate { it.toPair() }
-}
-
-
-fun symbolFrequency(lines: ArrayList<String>): Map<Char, Int>{
-    val symbolFrequency = HashMap<Char, Int>()
-
-    for (line in lines){
-        for (character in line){
-            if (!character.isLetterOrDigit()){
-                symbolFrequency[character] = symbolFrequency[character]!! + 1
-            }else{
-                symbolFrequency[character] = 1
-            }
-        }
-    }
-
-    return symbolFrequency
 }
 
 fun topWords(frequencies: Map<String, Int>, topN: Int = 20): List<Pair<String, Int>> {
@@ -116,23 +100,19 @@ fun topWords(frequencies: Map<String, Int>, topN: Int = 20): List<Pair<String, I
     return topWords
 }
 
+fun displayVerticalBarGraph(data: Map<String, Int>, title: String, maxBars: Int = 20) {
+    println("\n$title")
+    println("-".repeat(40))
 
-fun postPerMonth(dates: ArrayList<String>): Map<String, Int>{
-    val monthlyPosts = HashMap<String, Int>()
+    val limitedData = data.entries.take(maxBars)
 
-    for (date in dates){
-        val month : String
+    val maxValue = limitedData.maxOf { it.value }
 
-        month = date.substring(0, 7)
-
-        if (month.isNotEmpty()){
-            monthlyPosts[month] = monthlyPosts[month]!! + 1
-        }else{
-            monthlyPosts[month] = 1
-        }
+    for ((key, value) in limitedData) {
+        val bar = "|".repeat((value.toDouble() / maxValue * 20).toInt())
+        println("${key.padEnd(10)} $bar $value")
     }
-
-    return monthlyPosts.toSortedMap()
+    println("-".repeat(40))
 }
 
 fun stopWords(frequencies: Map<String, Int>, stopWords: List<String>): Map<String, Boolean> {
@@ -145,7 +125,8 @@ fun stopWords(frequencies: Map<String, Int>, stopWords: List<String>): Map<Strin
 
 fun main(){
 
-    val filePath = "/Users/jedidah/Documents/MCO2_ADPRG/src/fake_tweets.csv"
+    val filePath = "C:\\Users\\admin\\Downloads\\ADPRG_MCO2\\src/fake_tweets.csv"
+
     val stopWordsList = listOf(
         "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at",
         "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can", "can't", "cannot",
@@ -212,5 +193,13 @@ fun main(){
         println("$word: ${if (isPresent) "Yes" else "No"}")
     }
     println()
+
+    println("========================================================")
+
+    displayVerticalBarGraph(topWordsList.toMap(), "Top 20 Words")
+    displayVerticalBarGraph(charFreq, "Character Frequencies")
+    val stopWordsFrequency = stopWordsPresent.mapValues { if (it.value) 1 else 0 }
+    displayVerticalBarGraph(stopWordsFrequency, "Stop Words Present")
+
 
 }
