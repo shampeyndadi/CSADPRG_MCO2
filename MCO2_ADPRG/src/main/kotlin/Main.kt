@@ -4,6 +4,7 @@ import com.kennycason.kumo.WordFrequency
 import com.kennycason.kumo.bg.CircleBackground
 import com.kennycason.kumo.font.KumoFont
 import com.kennycason.kumo.font.scale.LinearFontScalar
+import com.kennycason.kumo.palette.ColorPalette
 import org.jfree.chart.ChartUtils
 import java.awt.Color
 import java.awt.Dimension
@@ -36,13 +37,27 @@ fun createTopWordCloud(wordFreq: Map<String, Int>, outputPath: String, topN: Int
         .take(topN)
         .map { WordFrequency(it.key, it.value) }
 
-    val dimension = Dimension(1000, 1000)
+    val dimension = Dimension(800, 800)
     val wordCloud = WordCloud(dimension, CollisionMode.PIXEL_PERFECT)
     wordCloud.setBackgroundColor(Color.BLACK)
-    wordCloud.setPadding(0)
-    wordCloud.setBackground(CircleBackground(500))
-    wordCloud.setKumoFont(KumoFont(Font("Arial", Font.BOLD, 12)))
-    wordCloud.setFontScalar(LinearFontScalar(12, 60))
+    wordCloud.setPadding(2)
+    wordCloud.setBackground(CircleBackground(400))
+
+    val font = Font("Arial", Font.BOLD, 20)
+    val secondaryFont = Font("Courier New", Font.ITALIC, 18)
+    wordCloud.setKumoFont(KumoFont(font))
+    wordCloud.setKumoFont(KumoFont(secondaryFont))
+
+    val colors = listOf(
+        Color(0x336699),
+        Color(0x99CC00),
+        Color(0xFF6600),
+        Color(0xFFCC00),
+        Color(0x9999CC)
+    )
+    wordCloud.setColorPalette(ColorPalette(colors))
+
+    wordCloud.setFontScalar(LinearFontScalar(10, 80))
     wordCloud.build(topWords)
     wordCloud.writeToFile(outputPath)
 
@@ -67,10 +82,25 @@ fun createPostsBarChart(postsPerMonth: Map<String, Int>, outputPath: String) {
 }
 
 fun createSymbolPieChartWithLegend(charFreq: Map<String, Int>, outputPath: String) {
-    val symbols = charFreq.filterKeys { it.matches(Regex("[^\\p{L}\\p{N}\\s]")) } // Non-alphanumeric, non-whitespace
+    val symbols = charFreq.filterKeys { it.matches(Regex("[^\\p{L}\\p{N}\\s]")) }
+
+    val filteredSymbols = mutableMapOf<String, Int>()
+    var otherSymbolsCount = 0
+
+    symbols.forEach { (symbol, freq) ->
+        if (symbol.isBlank() || freq < 5) {
+            otherSymbolsCount += freq
+        } else {
+            filteredSymbols[symbol] = freq
+        }
+    }
+
+    if (otherSymbolsCount > 0) {
+        filteredSymbols["Other Symbols"] = otherSymbolsCount
+    }
 
     val dataset = DefaultPieDataset<String>()
-    symbols.forEach { (symbol, freq) ->
+    filteredSymbols.forEach { (symbol, freq) ->
         dataset.setValue(symbol, freq.toDouble())
     }
 
@@ -82,13 +112,11 @@ fun createSymbolPieChartWithLegend(charFreq: Map<String, Int>, outputPath: Strin
         false
     )
 
-
     val legend = chart.legend
     legend.position = RectangleEdge.RIGHT
     legend.itemFont = chart.title.font.deriveFont(12f)
 
     ChartUtils.saveChartAsPNG(File(outputPath), chart, 800, 600)
-    println("Pie chart saved to: $outputPath")
 }
 
 
